@@ -130,6 +130,321 @@ header { text-align: center; }
 }
 .city-search-btn:hover { color: var(--gold); }
 .city-hint { font-size: 0.6rem; color: var(--text-muted); margin-bottom: 18px; line-height: 1.7; }
+
+/* input-row for coords */
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--text-muted); }
+input[type="number"] {
+  background: var(--bg3); border: 1px solid rgba(201,168,76,0.15); border-radius: 2px;
+  color: var(--text); font-family: 'Josefin Sans', sans-serif;
+  font-size: 1rem; padding: 12px 14px; width: 100%; outline: none;
+}
+.hint { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+
+/* buttons */
+.btn {
+  width: 100%; padding: 13px; border: none; border-radius: 2px;
+  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+  background-size: 200% 100%;
+  color: #0a0c0f; font-family: 'Josefin Sans', sans-serif;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.28em; text-transform: uppercase;
+  cursor: pointer; transition: background-position 0.4s, transform 0.1s;
+}
+.btn:hover { background-position: 100% 0; }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.spinner {
+  display: none; width: 20px; height: 20px;
+  border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold);
+  border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 14px;
+}
+.spinner.visible { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg {
+  display: none; color: #e05050; font-size: 0.72rem;
+  margin-top: 11px; text-align: center;
+}
+.error-msg.visible { display: block; }
+
+.gps-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 20px; }
+
+/* ── Result layout ── */
+.result-card { width: 100%; display: none; flex-direction: column; align-items: center; gap: 28px; }
+.result-card.visible { display: flex; }
+
+/* ── Compass ── */
+.compass-wrap { position: relative; width: 220px; height: 220px; flex-shrink: 0; }
+.compass-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(201,168,76,0.28); }
+.compass-face {
+  position: absolute; inset: 20px; border-radius: 50%;
+  background: radial-gradient(ellipse at 38% 33%, var(--bg3) 0%, #070809 100%);
+  border: 1px solid rgba(201,168,76,0.32);
+}
+#degreeCanvas { position: absolute; inset: 20px; border-radius: 50%; pointer-events: none; }
+.cardinal {
+  position: absolute; font-size: 0.58rem; color: var(--gold); font-weight: 600; transform: translate(-50%, -50%);
+}
+.cardinal.N { top: 5px; left: 50%; }
+.cardinal.S { bottom: 1px; left: 50%; transform: translate(-50%, 50%); }
+.cardinal.E { right: 1px; top: 50%; transform: translate(50%,-50%); }
+.cardinal.W { left: 1px; top: 50%; transform: translate(-50%,-50%); }
+
+.needle-container {
+  position: absolute; inset: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  /* Added transitions via JS for smoothness */
+}
+.needle { position: relative; width: 4px; height: 82%; display: flex; flex-direction: column; align-items: center; }
+.needle-tip {
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-bottom: 48px solid var(--gold); filter: drop-shadow(0 0 8px rgba(201,168,76,0.75));
+}
+.needle-tail { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 34px solid rgba(201,168,76,0.22); }
+.needle-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 11px; height: 11px; background: var(--gold); border-radius: 50%; z-index: 2;
+}
+.kaaba-icon { font-size: 14px; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); }
+
+.degree-display { text-align: center; }
+.degree-number { font-family: 'Amiri', serif; font-size: clamp(3rem, 10vw, 4.5rem); color: var(--gold); line-height: 1; }
+.direction-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 8px; }
+
+/* Live Button */
+#live-compass-btn {
+  margin-top: 10px; background: rgba(201,168,76,0.1); border: 1px solid var(--gold-dark);
+  color: var(--gold); font-size: 0.65rem; padding: 8px 16px; border-radius: 20px;
+  cursor: pointer; display: none; align-items: center; gap: 8px;
+}
+#live-compass-btn.active { background: var(--gold); color: #000; }
+
+/* Map */
+#qibla-map { width: 100%; height: 380px; border: 1px solid rgba(201,168,76,0.15); border-radius: 4px; }
+
+/* Info grid */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.info-item { background: var(--bg3); border: 1px solid rgba(201,168,76,0.1); border-radius: 2px; padding: 13px 15px; }
+.info-item-label { font-size: 0.53rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
+.info-item-value { font-family: 'Amiri', serif; font-size: 1rem; color: var(--text); }
+
+footer { font-size: 0.58rem; color: var(--text-muted); text-align: center; padding-top: 20px; line-height: 2; }
+.waqf-notice { font-family: 'Amiri', serif; font-size: 1rem; color: var(--gold); margin-bottom: 8px; }
+
+@media (max-width: 500px) {
+  .info-grid  { grid-template-columns: 1fr; }
+  #qibla-map { height: 280px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="arabic-title">القبلة</div>
+    <div class="subtitle">Qibla Finder</div>
+    <div class="divider">
+      <div class="divider-line"></div><div class="divider-diamond"></div><div class="divider-line"></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-city" onclick="switchTab('city')">City</button>
+    <button class="tab-btn" id="tab-coords" onclick="switchTab('coords')">Coordinates</button>
+    <button class="tab-btn" id="tab-gps" onclick="switchTab('gps')">GPS</button>
+  </div>
+
+  <div class="card">
+    <div class="corner-tl"></div>
+
+    <div class="panel active" id="panel-city">
+      <div class="section-label">🕌 Enter Your City :</div>
+      <div class="city-input-wrap">
+        <input class="city-input" type="text" id="city-input" placeholder="e.g. London, UK">
+        <button class="city-search-btn" onclick="searchCity()">🔍</button>
+      </div>
+      <div class="spinner" id="city-spinner"></div>
+      <button class="btn" id="city-btn" onclick="searchCity()">Find Qibla</button>
+      <div class="error-msg" id="city-error">Location not found.</div>
+    </div>
+
+    <div class="panel" id="panel-coords">
+      <div class="section-label">📐 Enter Coordinates</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>Lat</label>
+          <input type="number" id="lat" placeholder="53.48">
+        </div>
+        <div class="input-group">
+          <label>Lng</label>
+          <input type="number" id="lng" placeholder="-2.24">
+        </div>
+      </div>
+      <button class="btn" onclick="calculateFromCoords()">Calculate</button>
+    </div>
+
+    <div class="panel" id="panel-gps">
+      <div class="section-label">📍 Use Current Location</div>
+      <p class="gps-desc">Uses your phone's GPS for high accuracy.</p>
+      <div class="spinner" id="gps-spinner"></div>
+      <button class="btn" id="gps-btn" onclick="autoLocate()">Detect My Location</button>
+    </div>
+  </div>
+
+  <div class="result-card" id="result">
+    <div class="compass-wrap">
+      <div class="compass-ring"></div>
+      <canvas id="degreeCanvas"></canvas>
+      <span class="cardinal N">N</span><span class="cardinal S">S</span>
+      <span class="cardinal E">E</span><span class="cardinal W">W</span>
+      <div class="compass-face">
+        <div class="needle-container" id="needle-container">
+          <div class="needle">
+            <div style="position:relative">
+              <div class="needle-tip"></div>
+              <div class="kaaba-icon">🕋</div>
+            </div>
+            <div class="needle-tail"></div>
+          </div>
+          <div class="needle-center"></div>
+        </div>
+      </div>
+    </div>
+
+    <button id="live-compass-btn" onclick="startLiveCompass()">
+      <span>🔄</span> Enable Live Phone Rotation
+    </button>
+
+    <div class="degree-display">
+      <div class="degree-number" id="degree-num">—</div>
+      <div class="direction-label">Face <span id="cardinal-dir">—</span></div>
+    </div>
+
+    <div id="qibla-map"></div>
+
+    <div class="info-grid">
+      <div class="info-item"><div class="info-item-label">Location</div><div class="info-item-value" id="your-location">—</div></div>
+      <div class="info-item"><div class="info-item-label">Distance</div><div class="info-item-value" id="distance">—</div></div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="waqf-notice">وقف لوجه الله تعالى</div>
+    Developed by <strong>Eng. Obaid Mufleh</strong><br>
+    Kaaba: 21.4225°N, 39.8262°E
+  </footer>
+</div>
+
+<script>
+const KAABA_LAT = 21.4225;
+const KAABA_LNG = 39.8262;
+let qiblaBearing = 0;
+let currentRotation = 0;
+let isLive = false;
+let leafletMap = null;
+
+// --- MATH ---
+const toRad = d => d * Math.PI / 180;
+const toDeg = r => r * 180 / Math.PI;
+
+function calcQibla(lat, lng) {
+  const phi1 =body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 10%, rgba(201,168,76,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 60%, rgba(201,168,76,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 70%, rgba(201,168,76,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 25% 45%, rgba(232,208,138,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 85%, rgba(232,208,138,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50%  5%, rgba(232,208,138,0.45) 0%, transparent 100%);
+  pointer-events: none; z-index: 0;
+}
+
+.container {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 760px;
+  padding: 40px 20px 80px;
+  display: flex; flex-direction: column; align-items: center; gap: 32px;
+}
+
+/* ── Header ── */
+header { text-align: center; }
+.arabic-title {
+  font-family: 'Amiri', serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: var(--gold); letter-spacing: 0.05em; line-height: 1; margin-bottom: 8px;
+  text-shadow: 0 0 40px rgba(201,168,76,0.3);
+}
+.subtitle { font-size: 0.72rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--text-muted); }
+.sub-desc { font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.08em; margin-top: 5px; }
+.divider { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-dark), transparent); }
+.divider-diamond { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); flex-shrink: 0; }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; width: 100%;
+  border: 1px solid rgba(201,168,76,0.2); border-radius: 3px; overflow: hidden;
+}
+.tab-btn {
+  flex: 1; padding: 12px 6px; background: transparent; border: none; cursor: pointer;
+  font-family: 'Josefin Sans', sans-serif; font-size: 0.63rem;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
+  transition: background 0.2s, color 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tab-btn:not(:last-child) { border-right: 1px solid rgba(201,168,76,0.15); }
+.tab-btn.active { background: rgba(201,168,76,0.1); color: var(--gold); }
+.tab-btn:hover:not(.active) { background: rgba(201,168,76,0.05); color: var(--text); }
+
+/* ── Card ── */
+.card {
+  width: 100%; background: var(--bg2);
+  border: 1px solid rgba(201,168,76,0.15); border-radius: 4px;
+  padding: 26px; position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.card::after {
+  content: ''; position: absolute; bottom: 0; right: 0; width: 55px; height: 55px;
+  border-right: 1px solid rgba(201,168,76,0.2); border-bottom: 1px solid rgba(201,168,76,0.2);
+  border-radius: 0 0 4px 0; pointer-events: none;
+}
+.corner-tl {
+  position: absolute; top: 0; left: 0; width: 55px; height: 55px;
+  border-left: 1px solid rgba(201,168,76,0.2); border-top: 1px solid rgba(201,168,76,0.2);
+  border-radius: 4px 0 0 0; pointer-events: none;
+}
+
+.panel { display: none; }
+.panel.active { display: block; }
+.section-label {
+  font-size: 0.62rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--gold-dark); margin-bottom: 14px;
+}
+
+/* city */
+.city-input-wrap { position: relative; margin-bottom: 10px; }
+.city-input {
+  width: 100%; background: var(--bg3);
+  border: 1px solid rgba(201,168,76,0.15); border-radius: 2px;
+  color: var(--text); font-family: 'Josefin Sans', sans-serif;
+  font-size: 1rem; padding: 13px 46px 13px 14px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.city-input:focus { border-color: rgba(201,168,76,0.5); box-shadow: 0 0 0 3px rgba(201,168,76,0.07); }
+.city-input::placeholder { color: #3a3730; }
+.city-search-btn {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 46px;
+  background: transparent; border: none; cursor: pointer; color: var(--gold-dark);
+  display: flex; align-items: center; justify-content: center; transition: color 0.2s;
+}
+.city-search-btn:hover { color: var(--gold); }
+.city-hint { font-size: 0.6rem; color: var(--text-muted); margin-bottom: 18px; line-height: 1.7; }
 .city-hint code {
   font-family: monospace; color: var(--gold-dark); font-size: 0.65rem;
   background: rgba(201,168,76,0.06); padding: 1px 5px; border-radius: 2px;
